@@ -43,22 +43,17 @@ public class MovieTheatreService {
     }
 
     public LocalTime findLatestShow(String title) {
-        Optional<Movie> result = Optional.empty();
-        Optional<LocalTime> lastTime = Optional.empty();
-        for (List<Movie> movies : shows.values()) {
-            result = movies.stream()
-                    .filter(m -> m.getTitle().equals(title))
-                    .max(Comparator.comparing(Movie::getStartTime));
-            if (result.isPresent() && (lastTime.isEmpty() ||
-                    result.get().getStartTime().isAfter(lastTime.get()))) {
-                lastTime = Optional.of(result.get().getStartTime());
-            }
-        }
+        Optional<Movie> result;
 
-        if (lastTime.isEmpty()) {
+        result = shows.values().stream()
+                .flatMap(Collection::stream)
+                .filter(m -> m.getTitle().equals(title))
+                .max(Comparator.comparing(Movie::getStartTime));
+
+        if (result.isEmpty()) {
             throw new IllegalArgumentException("Can't find movie!");
         } else {
-            return lastTime.get();
+            return result.get().getStartTime();
         }
     }
 
